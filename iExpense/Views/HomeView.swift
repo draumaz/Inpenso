@@ -30,9 +30,9 @@ struct HomeView: View {
                 VStack(spacing: 20) {
                     headerCard
                         .padding(.top, 10)
+                    recentExpensesSection
                     recentSpendingCard
                     categoryBreakdownCard
-                    recentExpensesSection
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 20)
@@ -64,7 +64,7 @@ struct HomeView: View {
             HStack {
                 cashflowMetric(title: "Income", amount: analyticsViewModel.totalIncome, color: .green)
                 Divider()
-                cashflowMetric(title: "Spent", amount: analyticsViewModel.totalSpent, color: .primary)
+                cashflowMetric(title: "Spent", amount: analyticsViewModel.totalSpent, color: .red)
                 Divider()
                 cashflowMetric(title: "Net", amount: analyticsViewModel.netCashflow, color: analyticsViewModel.netCashflow >= 0 ? .green : .red)
             }

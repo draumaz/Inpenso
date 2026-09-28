@@ -27,7 +27,7 @@ enum TransactionType: String, CaseIterable, Codable, Identifiable {
     var amountColor: Color {
         switch self {
         case .expense:
-            return .primary
+            return .red
         case .income:
             return .green
         }
