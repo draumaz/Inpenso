@@ -74,18 +74,18 @@ struct MonthYearPicker: View {
     var body: some View {
         HStack {
             // MARK: - Left Arrow Button
-            if(selectedIndex > 0) {
-                Button(action: {
-                    if selectedIndex > 0 {
-                        selectedIndex -= 1
-                    }
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.title2)
-                        .foregroundColor(.primary.opacity(selectedIndex > 0 ? 1 : 0))
+            Button(action: {
+                if selectedIndex > 0 {
+                    selectedIndex -= 1
                 }
-                .disabled(selectedIndex == 0)
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(.title2)
+                    .foregroundColor(.primary)
             }
+            .frame(width: 44, height: 44)
+            .opacity(selectedIndex > 0 ? 1 : 0)
+            .disabled(selectedIndex == 0)
             
             VStack(spacing: 0) {
                 TabView(selection: $selectedIndex) {
@@ -106,7 +106,7 @@ struct MonthYearPicker: View {
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 .frame(height: 50)
-                .onChange(of: selectedIndex) {
+                .onChange(of: selectedIndex) { _, _ in
                     guard monthYearList.indices.contains(selectedIndex) else { return }
                     let monthYear = monthYearList[selectedIndex]
                     
@@ -149,9 +149,11 @@ struct MonthYearPicker: View {
             }) {
                 Image(systemName: "chevron.right")
                     .font(.title2)
-                    .foregroundColor(.primary.opacity(selectedIndex < monthYearList.count - 1 ? 1 : 0))
+                    .foregroundColor(.primary)
             }
-            .disabled(selectedIndex == monthYearList.count - 1 )
+            .frame(width: 44, height: 44)
+            .opacity(selectedIndex < monthYearList.count - 1 ? 1 : 0)
+            .disabled(selectedIndex == monthYearList.count - 1)
         }
     }
 }

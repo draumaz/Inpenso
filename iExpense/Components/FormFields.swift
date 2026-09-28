@@ -53,7 +53,7 @@ struct TextFormField: View {
     }
 }
 
-/// Currency input field with formatting
+/// Currency input field with automatic decimal point insertion
 struct CurrencyFormField: View {
     let label: String
     @Binding var amount: String
@@ -77,10 +77,13 @@ struct CurrencyFormField: View {
                 TextField("0.00", text: $amount)
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .keyboardType(.decimalPad)
+                    .keyboardType(.numberPad)
                     .multilineTextAlignment(.leading)
-                    .onChange(of: amount) { 
-                        amount = formatCurrencyInput(amount)
+                    .onChange(of: amount) { _, newValue in
+                        let formatted = formatCurrencyInput(newValue)
+                        if amount != formatted {
+                            amount = formatted
+                        }
                     }
                 
                 Spacer()
@@ -106,29 +109,17 @@ struct CurrencyFormField: View {
         }
     }
     
-    /// Format the input to ensure it's a valid currency value
+    /// Format the input so that decimal point is automatically inserted (e.g. typing 7, 0, 8 produces 7.08)
     private func formatCurrencyInput(_ input: String) -> String {
-        // Remove any non-numeric characters except for a single decimal point
-        var formattedInput = input.replacingOccurrences(of: ",", with: ".")
+        let digits = input.filter { $0.isNumber }
         
-        // Allow only one decimal point
-        let components = formattedInput.components(separatedBy: ".")
-        if components.count > 2 {
-            formattedInput = components[0] + "." + components[1]
+        guard let cents = Int(digits), cents > 0 else {
+            return ""
         }
         
-        // Limit to two decimal places
-        if let decimalIndex = formattedInput.firstIndex(of: ".") {
-            let decimalPosition = formattedInput.distance(from: formattedInput.startIndex, to: decimalIndex)
-            let maxLength = decimalPosition + 3 // Allow up to 2 decimal places
-            
-            if formattedInput.count > maxLength {
-                let endIndex = formattedInput.index(formattedInput.startIndex, offsetBy: maxLength)
-                formattedInput = String(formattedInput[..<endIndex])
-            }
-        }
-        
-        return formattedInput
+        let cappedCents = min(cents, 999_999_999)
+        let dollars = Double(cappedCents) / 100.0
+        return String(format: "%.2f", dollars)
     }
 }
 
@@ -157,4 +148,4 @@ struct CurrencyFormField: View {
     }
     .padding()
     .background(Color(.systemGroupedBackground))
-} 
+}

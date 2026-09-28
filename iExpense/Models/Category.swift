@@ -45,6 +45,12 @@ enum Category: String, CaseIterable, Codable, AppEnum {
     case subscriptions
     case healthcare
     case education
+    case wage
+    case salary
+    case bonus
+    case investments
+    case freelance
+    case gifts
     case others
 
     var displayName: String {
@@ -59,6 +65,12 @@ enum Category: String, CaseIterable, Codable, AppEnum {
         case .subscriptions: return "Subscriptions"
         case .healthcare: return "Healthcare"
         case .education: return "Education"
+        case .wage: return "Wage"
+        case .salary: return "Salary"
+        case .bonus: return "Bonus"
+        case .investments: return "Investments"
+        case .freelance: return "Freelance"
+        case .gifts: return "Gifts"
         case .others: return "Others"
         }
     }
@@ -76,6 +88,12 @@ enum Category: String, CaseIterable, Codable, AppEnum {
         .subscriptions: "Subscriptions",
         .healthcare: "Healthcare",
         .education: "Education",
+        .wage: "Wage",
+        .salary: "Salary",
+        .bonus: "Bonus",
+        .investments: "Investments",
+        .freelance: "Freelance",
+        .gifts: "Gifts",
         .others: "Others"
     ]
 }
@@ -112,6 +130,18 @@ extension Category {
             return "heart.fill"
         case .education:
             return "book.fill"
+        case .wage:
+            return "banknote.fill"
+        case .salary:
+            return "briefcase.fill"
+        case .bonus:
+            return "gift.fill"
+        case .investments:
+            return "chart.line.uptrend.xyaxis"
+        case .freelance:
+            return "laptopcomputer"
+        case .gifts:
+            return "square.and.arrow.down.fill"
         case .others:
             return "ellipsis"
         }
@@ -139,6 +169,18 @@ extension Category {
             return "#FF3B30"
         case .education:
             return "#5856D6"
+        case .wage:
+            return "#34C759"
+        case .salary:
+            return "#007AFF"
+        case .bonus:
+            return "#FF9500"
+        case .investments:
+            return "#AF52DE"
+        case .freelance:
+            return "#30B0C7"
+        case .gifts:
+            return "#FF2D55"
         case .others:
             return "#8E8E93"
         }
@@ -166,9 +208,47 @@ extension Category {
             return .red
         case .education:
             return .indigo
+        case .wage:
+            return .green
+        case .salary:
+            return .blue
+        case .bonus:
+            return .orange
+        case .investments:
+            return .purple
+        case .freelance:
+            return .teal
+        case .gifts:
+            return .pink
         case .others:
             return .gray
         }
+    }
+
+    var isIncomeCategory: Bool {
+        switch self {
+        case .wage, .salary, .bonus, .investments, .freelance, .gifts, .others:
+            return true
+        default:
+            return false
+        }
+    }
+
+    var isExpenseCategory: Bool {
+        switch self {
+        case .food, .eatingOut, .rent, .shopping, .entertainment, .transportation, .utilities, .subscriptions, .healthcare, .education, .others:
+            return true
+        default:
+            return false
+        }
+    }
+
+    static var expenseCategories: [Category] {
+        [.food, .eatingOut, .rent, .shopping, .entertainment, .transportation, .utilities, .subscriptions, .healthcare, .education, .others]
+    }
+
+    static var incomeCategories: [Category] {
+        [.wage, .salary, .bonus, .investments, .freelance, .gifts, .others]
     }
 }
 

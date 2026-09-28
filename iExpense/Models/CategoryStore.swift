@@ -43,8 +43,34 @@ final class CategoryStore: ObservableObject {
         category(for: transaction.categoryID)
     }
 
-    func categoriesForPicker(including categoryID: String? = nil) -> [FinanceCategory] {
-        var categories = visibleCategories
+    func categories(for type: TransactionType) -> [FinanceCategory] {
+        let visible = visibleCategories
+        let filtered = visible.filter { cat in
+            if let builtIn = Category.category(from: cat.id) {
+                return type == .income ? builtIn.isIncomeCategory : builtIn.isExpenseCategory
+            }
+            return true
+        }
+
+        if type == .income {
+            var incomeCats = filtered
+            if let wageIndex = incomeCats.firstIndex(where: { $0.id == Category.wage.categoryID }) {
+                let wage = incomeCats.remove(at: wageIndex)
+                incomeCats.insert(wage, at: 0)
+            }
+            if let salaryIndex = incomeCats.firstIndex(where: { $0.id == Category.salary.categoryID }) {
+                let salary = incomeCats.remove(at: salaryIndex)
+                let insertIndex = incomeCats.contains(where: { $0.id == Category.wage.categoryID }) ? 1 : 0
+                incomeCats.insert(salary, at: insertIndex)
+            }
+            return incomeCats
+        }
+
+        return filtered
+    }
+
+    func categoriesForPicker(for type: TransactionType, including categoryID: String? = nil) -> [FinanceCategory] {
+        var categories = categories(for: type)
 
         if let categoryID,
            !categoryID.isEmpty,
@@ -54,6 +80,10 @@ final class CategoryStore: ObservableObject {
         }
 
         return categories
+    }
+
+    func categoriesForPicker(including categoryID: String? = nil) -> [FinanceCategory] {
+        categoriesForPicker(for: .expense, including: categoryID)
     }
 
     func categoriesForFilter(usedCategoryIDs: Set<String>) -> [FinanceCategory] {
@@ -76,14 +106,19 @@ final class CategoryStore: ObservableObject {
         return orderedIDs + unorderedIDs
     }
 
-    func preferredCategoryID(for categoryID: String?) -> String {
+    func preferredCategoryID(for categoryID: String?, type: TransactionType = .expense) -> String {
+        let available = categories(for: type)
         if let categoryID,
            !catalogState.hiddenCategoryIDs.contains(categoryID),
-           categoryMap[categoryID] != nil {
+           available.contains(where: { $0.id == categoryID }) {
             return categoryID
         }
 
-        return visibleCategories.first?.id ?? FinanceCategory.fallback.id
+        return available.first?.id ?? FinanceCategory.fallback.id
+    }
+
+    func preferredCategoryID(for categoryID: String?) -> String {
+        preferredCategoryID(for: categoryID, type: .expense)
     }
 
     func addCategory(name: String, iconName: String, colorHex: String) {

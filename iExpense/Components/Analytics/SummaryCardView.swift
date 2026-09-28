@@ -45,9 +45,10 @@ struct SummaryCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Title with icon
-            HStack(alignment: .top, spacing: 6) {
+            HStack(alignment: .center, spacing: 6) {
                 Image(systemName: icon)
                     .foregroundColor(color)
+                    .frame(width: 20, alignment: .center)
 
                 Text(title)
                     .font(.subheadline)
@@ -55,6 +56,8 @@ struct SummaryCard: View {
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
+                
+                Spacer(minLength: 0)
             }
 
             Spacer()
@@ -68,7 +71,7 @@ struct SummaryCard: View {
         }
         .padding()
         .frame(height: 110)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.secondarySystemBackground))
@@ -156,4 +159,4 @@ struct SummaryCardGrid: View {
         ])
     }
     .padding()
-} 
+}

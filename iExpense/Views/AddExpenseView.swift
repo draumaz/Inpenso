@@ -24,10 +24,10 @@ struct AddExpenseView: View {
     
     // UI States
     @State private var showDatePicker = false
+    @State private var showTimePicker = false
     @State private var keyboardVisible: Bool = false
     @State private var showingValidationAlert = false
     @State private var validationMessage = ""
-    @State private var animateSuccess = false
     
     // Current currency symbol
     private var currencySymbol: String {
@@ -58,7 +58,7 @@ struct AddExpenseView: View {
                         CardView(title: "Category") {
                             CategoryGrid(
                                 selectedCategoryID: $selectedCategoryID,
-                                categories: categoryStore.allCategories
+                                categories: categoryStore.categories(for: transactionType)
                             )
                                 .padding(.horizontal)
                         }
@@ -69,6 +69,27 @@ struct AddExpenseView: View {
                             selectedDate: $selectedDate,
                             isExpanded: $showDatePicker
                         )
+                        .onChange(of: showDatePicker) { _, newValue in
+                            if newValue {
+                                withAnimation {
+                                    showTimePicker = false
+                                }
+                            }
+                        }
+                        
+                        // Time selection
+                        TimePickerCard(
+                            title: "Time",
+                            selectedDate: $selectedDate,
+                            isExpanded: $showTimePicker
+                        )
+                        .onChange(of: showTimePicker) { _, newValue in
+                            if newValue {
+                                withAnimation {
+                                    showDatePicker = false
+                                }
+                            }
+                        }
                         
                         // Notes
                         notesCard
@@ -88,11 +109,6 @@ struct AddExpenseView: View {
                     .padding(.bottom, 24)
                 }
                 .scrollDismissesKeyboard(.interactively)
-                
-                // Success animation overlay
-                if animateSuccess {
-                    successOverlay
-                }
             }
             .navigationTitle("Add Transaction")
             .navigationBarTitleDisplayMode(.inline)
@@ -103,9 +119,16 @@ struct AddExpenseView: View {
                     }
                 }
                 
-                // Done button only shows when keyboard is visible
+                // Show Save button when form is valid, otherwise show Done when keyboard is visible
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if keyboardVisible {
+                    if isFormValid() {
+                        Button("Save") {
+                            saveExpense()
+                        }
+                        .foregroundColor(.blue)
+                        .tint(.blue)
+                        .bold()
+                    } else if keyboardVisible {
                         Button("Done") {
                             hideKeyboard()
                         }
@@ -126,7 +149,10 @@ struct AddExpenseView: View {
                 Button("OK", role: .cancel) { }
             }
             .onAppear {
-                selectedCategoryID = categoryStore.preferredCategoryID(for: selectedCategoryID)
+                selectedCategoryID = categoryStore.preferredCategoryID(for: selectedCategoryID, type: transactionType)
+            }
+            .onChange(of: transactionType) { _, newType in
+                selectedCategoryID = categoryStore.preferredCategoryID(for: selectedCategoryID, type: newType)
             }
         }
     }
@@ -200,59 +226,8 @@ struct AddExpenseView: View {
             }
             .padding()
             .foregroundColor(.white)
-            
-//            HStack {
-//                Spacer()
-//                Text("Save Expense")
-//                    .fontWeight(.bold)
-//                Spacer()
-//            }
-//            .padding()
-//            .background(isFormValid() ? Color.accentColor : Color.gray)
-//            .foregroundColor(.white)
-//            .cornerRadius(16)
         }
         .disabled(!isFormValid())
-    }
-    
-//    let saveButton: some View =
-//    
-//    if #available(iOS 26.0, *) {
-//        saveButton
-//            .glassEffect(.regular.tint(.blue).interactive())
-//    } else {
-//        saveButton
-//            .background(Color.blue.opacity(0.8))
-//            .cornerRadius(12)
-//    }
-    
-    // MARK: - Success Overlay
-    
-    private var successOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.4)
-                .ignoresSafeArea()
-            
-            VStack(spacing: 20) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.green)
-                
-                Text("Transaction Added!")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-            }
-            .padding(30)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(.systemBackground).opacity(0.8))
-                    .blur(radius: 0.5)
-            )
-            .scaleEffect(animateSuccess ? 1.0 : 0.5)
-            .opacity(animateSuccess ? 1.0 : 0)
-            .animation(.spring(), value: animateSuccess)
-        }
     }
     
     // MARK: - Helper Methods
@@ -282,11 +257,6 @@ struct AddExpenseView: View {
             return
         }
         
-        // Show success animation
-        withAnimation {
-            animateSuccess = true
-        }
-        
         let selectedCategory = categoryStore.category(for: selectedCategoryID)
         let legacyCategory = Category.category(from: selectedCategory.id) ?? .others
         let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -305,10 +275,8 @@ struct AddExpenseView: View {
         // Trigger success haptic
         HapticFeedback.success()
         
-        // Wait for animation, then dismiss
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            dismiss()
-        }
+        // Immediately dismiss back to Home
+        dismiss()
     }
     
     private func showValidationAlert(_ message: String) {

@@ -13,7 +13,6 @@ struct HomeViewTest: View {
     @ObservedObject var analyticsViewModel: AnalyticsViewModel
     @State private var showingAddExpense = false
     @State private var showRecentExpenses = true
-    @State private var animateCards = false
     @State private var selectedExpenseToEdit: Expense? = nil
     @State private var showingEditExpense = false
     
@@ -51,12 +50,6 @@ struct HomeViewTest: View {
             }
             .sheet(item: $selectedExpenseToEdit) { expense in
                 EditExpenseView(viewModel: viewModel, expense: expense)
-            }
-            .onAppear {
-                // Animate cards when view appears with slight delay between each
-                withAnimation(.easeOut(duration: 0.5).delay(0.1)) {
-                    animateCards = true
-                }
             }
         }
     }
@@ -146,8 +139,6 @@ struct HomeViewTest: View {
                 .fill(Color(.secondarySystemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         )
-        .offset(y: animateCards ? 0 : -30)
-        .opacity(animateCards ? 1 : 0)
     }
     
     // Helper function to get recent spending data

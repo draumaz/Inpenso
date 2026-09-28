@@ -14,9 +14,7 @@ struct HomeView: View {
 
     @ObservedObject var viewModel: ExpenseViewModel
     @ObservedObject var analyticsViewModel: AnalyticsViewModel
-    @State private var showingAddExpense = false
     @State private var showRecentExpenses = true
-    @State private var animateCards = false
     @State private var selectedExpenseToEdit: Expense? = nil
     @State private var showingEditExpense = false
     
@@ -40,34 +38,8 @@ struct HomeView: View {
                 .padding(.bottom, 20)
             }
             .navigationTitle("Home")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingAddExpense = true
-                    }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "plus")
-                            Text("Add")
-                                .font(.callout)
-                                .fontWeight(.semibold)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .cornerRadius(20)
-                    }
-                }
-            }
-            .sheet(isPresented: $showingAddExpense) {
-                AddExpenseView(viewModel: viewModel)
-            }
             .sheet(item: $selectedExpenseToEdit) { expense in
                 EditExpenseView(viewModel: viewModel, expense: expense)
-            }
-            .onAppear {
-                // Animate cards when view appears with slight delay between each
-                withAnimation(.easeOut(duration: 0.5).delay(0.1)) {
-                    animateCards = true
-                }
             }
         }
     }
@@ -140,8 +112,6 @@ struct HomeView: View {
                 .fill(Color(.secondarySystemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         )
-        .offset(y: animateCards ? 0 : -50)
-        .opacity(animateCards ? 1 : 0)
     }
     
     // MARK: - Recent Spending Card
@@ -230,8 +200,6 @@ struct HomeView: View {
                 .fill(Color(.secondarySystemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         )
-        .offset(y: animateCards ? 0 : -30)
-        .opacity(animateCards ? 1 : 0)
     }
     
     // Helper function to get recent spending data
@@ -322,8 +290,6 @@ struct HomeView: View {
                 .fill(Color(.secondarySystemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         )
-        .offset(y: animateCards ? 0 : -20)
-        .opacity(animateCards ? 1 : 0)
     }
     
     // MARK: - Recent Expenses Section
@@ -437,8 +403,6 @@ struct HomeView: View {
                 .fill(Color(.secondarySystemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         )
-        .offset(y: animateCards ? 0 : -10)
-        .opacity(animateCards ? 1 : 0)
     }
     
     // MARK: - Helper Methods

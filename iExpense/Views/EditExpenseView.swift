@@ -20,6 +20,7 @@ struct EditExpenseView: View {
     @State private var selectedCategoryID: String
     @State private var transactionType: TransactionType
     @State private var showDatePicker: Bool = false
+    @State private var showTimePicker: Bool = false
     @State private var notes: String = ""
     @State private var keyboardVisible: Bool = false
     @State private var viewID = UUID()
@@ -85,12 +86,33 @@ struct EditExpenseView: View {
                             selectedDate: $selectedDate,
                             isExpanded: $showDatePicker
                         )
+                        .onChange(of: showDatePicker) { _, newValue in
+                            if newValue {
+                                withAnimation {
+                                    showTimePicker = false
+                                }
+                            }
+                        }
+                        
+                        // Time picker
+                        TimePickerCard(
+                            title: "Time",
+                            selectedDate: $selectedDate,
+                            isExpanded: $showTimePicker
+                        )
+                        .onChange(of: showTimePicker) { _, newValue in
+                            if newValue {
+                                withAnimation {
+                                    showDatePicker = false
+                                }
+                            }
+                        }
                         
                         // Category selection
                         CardView(title: "Category") {
                             CategoryGrid(
                                 selectedCategoryID: $selectedCategoryID,
-                                categories: categoryStore.categoriesForPicker(including: selectedCategoryID)
+                                categories: categoryStore.categoriesForPicker(for: transactionType, including: selectedCategoryID)
                             )
                                 .padding(.horizontal)
                         }
@@ -196,6 +218,12 @@ struct EditExpenseView: View {
             }
             .onAppear {
                 viewID = UUID()
+            }
+            .onChange(of: transactionType) { _, newType in
+                let available = categoryStore.categoriesForPicker(for: newType, including: selectedCategoryID)
+                if !available.contains(where: { $0.id == selectedCategoryID }) {
+                    selectedCategoryID = categoryStore.preferredCategoryID(for: selectedCategoryID, type: newType)
+                }
             }
             .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
                 withAnimation {
